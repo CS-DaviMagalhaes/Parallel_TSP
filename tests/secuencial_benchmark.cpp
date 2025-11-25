@@ -4,6 +4,12 @@
 */
 
 #include <bits/stdc++.h>
+#include <chrono>
+#include <cmath>
+#include <vector>
+#include <fstream>
+#include <sstream>
+#include <string>
 using namespace std;
 
 vector<int> final_path; // Final solution (path of salesman)
@@ -160,4 +166,69 @@ void TSP(const vector<vector<int>>& adj)
 
     // Call to TSPRec for curr_weight equal to 0 and level 1
     TSPRec(adj, curr_bound, 0, 1, curr_path);
+}
+
+// ----------------- TEST ------------------- // 
+
+struct City {
+    double x, y;
+};
+
+vector<City> readTSPLIB(const string &filename) {
+    ifstream file(filename);
+    string line;
+    vector<City> cities;
+    bool readingCoords = false;
+
+    while (getline(file, line)) {
+        if (line.find("NODE_COORD_SECTION") != string::npos) {
+            readingCoords = true;
+            continue;
+        }
+        if (readingCoords) {
+            if (line.find("EOF") != string::npos) break;
+            istringstream iss(line);
+            int id;
+            double x, y;
+            if (iss >> id >> x >> y)
+                cities.push_back({x, y});
+        }
+    }
+    return cities;
+}
+
+vector<vector<int>> computeDistanceMatrix(const vector<City>& cities) {
+    int n = cities.size();
+    vector<vector<int>> dist(n, vector<int>(n, 0));
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i == j) continue;
+            double dx = cities[i].x - cities[j].x;
+            double dy = cities[i].y - cities[j].y;
+            dist[i][j] = (int)round(sqrt(dx*dx + dy*dy));
+        }
+    }
+    return dist;
+}
+
+int main() {
+    vector<City> cities = readTSPLIB("./data/xqf131.tsp");
+    vector<vector<int>> adj = computeDistanceMatrix(cities);
+    int N = adj.size();
+
+    auto start = std::chrono::high_resolution_clock::now();
+    // Llamar TSP function con matriz de adyacencia
+    TSP(adj);
+    auto end = std::chrono::high_resolution_clock::now();
+
+    printf("Minimum cost : %d\n", final_res);
+    printf("Path Taken : ");
+    for (int i=0; i<final_path.size(); i++)
+        printf("%d ", final_path[i]);
+    printf("\n");
+
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "Tiempo de ejecución: " << elapsed.count() << " segundos\n";
+
+    return 0;
 }
