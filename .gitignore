@@ -1,4 +1,2 @@
-# Ignore all files without extensions (common for linux executables)
-*
-!*.*
-!*/
+*.exe
+*.out

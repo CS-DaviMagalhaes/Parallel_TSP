@@ -1,4 +1,14 @@
-#include <bits/stdc++.h>
+#include <algorithm>
+#include <atomic>
+#include <chrono>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <limits>
+#include <sstream>
+#include <string>
+#include <vector>
 #include "sequential.cpp"
 using namespace std;
 
