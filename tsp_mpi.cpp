@@ -1,6 +1,13 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include "utils/tools.cpp"
 #include <mpi.h>
+#include <limits.h>
 using namespace std;
+
+
+int number_of_nodes = 10; 
+long long local_nodes_visited = 0;
 
 vector<int> final_path; // Final solution (path of salesman)
 vector<bool> visited; // Tracks visited nodes in a particular path
@@ -15,7 +22,6 @@ void copyToFinal(const vector<int>& curr_path)
         final_path[i] = curr_path[i];
     final_path[N] = curr_path[0];
 }
-
 // Function to find the minimum edge cost having an end at the vertex i
 int firstMin(const vector<vector<int>>& adj, int i)
 {
@@ -26,7 +32,6 @@ int firstMin(const vector<vector<int>>& adj, int i)
             min = adj[i][k];
     return min;
 }
-
 // function to find the second minimum edge cost having an end at the vertex i
 int secondMin(const vector<vector<int>>& adj, int i)
 {
@@ -34,21 +39,16 @@ int secondMin(const vector<vector<int>>& adj, int i)
     int N = adj.size();
     for (int j=0; j<N; j++)
     {
-        if (i == j)
-            continue;
-
-        if (adj[i][j] <= first)
-        {
+        if (i == j) continue;
+        if (adj[i][j] <= first) {
             second = first;
             first = adj[i][j];
         }
-        else if (adj[i][j] <= second &&
-                 adj[i][j] != first)
+        else if (adj[i][j] <= second && adj[i][j] != first)
             second = adj[i][j];
     }
     return second;
 }
-
 // function that takes as arguments:
 // curr_bound -> lower bound of the root node
 // curr_weight-> stores the weight of the path so far
@@ -59,6 +59,9 @@ int secondMin(const vector<vector<int>>& adj, int i)
 // n_procs -> Total number of MPI processes
 void TSPRec(const vector<vector<int>>& adj, int curr_bound, int curr_weight, int level, vector<int>& curr_path, int my_rank, int n_procs)
 {
+    // Contar nodo visitado
+    local_nodes_visited++;
+
     int N = adj.size();
     // base case is when we have reached level N which
     // means we have covered all the nodes once
@@ -131,31 +134,31 @@ void TSPRec(const vector<vector<int>>& adj, int curr_bound, int curr_weight, int
         }
     }
 }
-
 // This function sets up final_path
-void TSP(const vector<vector<int>>& adj)
+long long TSP(const vector<vector<int>>& adj)
 {   
     int my_rank, size;
     // MPI_Init is handled in main
     MPI_Comm_size(MPI_COMM_WORLD, &size); 
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
+    local_nodes_visited = 0;
+
     int N = adj.size();
     vector<int> curr_path(N + 1);
-
     // Calculate initial lower bound for the root node
     // using the formula 1/2 * (sum of first min + second min) for all edges.
     // firstMin is the edge with lowest weight leaving the node
     // secondMin is the second lowest weight leaving the node
     // Also initialize the curr_path and visited array
-    int curr_bound = 0;
-    fill(curr_path.begin(), curr_path.end(), -1);
     
+    int curr_bound = 0;
+    
+    fill(curr_path.begin(), curr_path.end(), -1);
     // Initialize globals
     visited.assign(N, false);
     final_path.assign(N + 1, 0);
     final_res = INT_MAX;
-
     // Compute initial bound, its like an estimation of the minimum cost
     // so we can filter some bad "branches" later
     for (int i=0; i<N; i++)
@@ -181,7 +184,6 @@ void TSP(const vector<vector<int>>& adj)
 
     local_min.value = final_res;
     local_min.rank = my_rank;
-
     // Find the process with the minimum cost
     MPI_Allreduce(&local_min, &global_min, 1, MPI_2INT, MPI_MINLOC, MPI_COMM_WORLD);
 
@@ -190,7 +192,7 @@ void TSP(const vector<vector<int>>& adj)
 
     // If I am the rank that found the minimum, send my path to Rank 0
     // If I am Rank 0, receive the path (if it's not me)
-    
+
     if (my_rank == 0) {
         if (global_min.rank != 0) {
             // Receive path from the winner
@@ -199,10 +201,10 @@ void TSP(const vector<vector<int>>& adj)
         // If I am the winner, final_path is already correct.
         
         printf("Minimum cost : %d\n", final_res);
-        printf("Path Taken : ");
-        for (int i=0; i<final_path.size(); i++)
-            printf("%d ", final_path[i]);
-        printf("\n");
+        //printf("Path Taken : ");
+        //for (int i=0; i<final_path.size(); i++)
+        //    printf("%d ", final_path[i]);
+        //printf("\n");
 
     } else {
         if (my_rank == global_min.rank) {
@@ -210,4 +212,6 @@ void TSP(const vector<vector<int>>& adj)
             MPI_Send(final_path.data(), N + 1, MPI_INT, 0, 0, MPI_COMM_WORLD);
         }
     }
+    
+    return (my_rank == 0) ? local_nodes_visited : 0;
 }

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstring>
 #include <chrono>
+#include <limits.h>
 #include <atomic> 
 #include <omp.h>
 

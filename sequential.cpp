@@ -2,7 +2,7 @@
     Referencia: https://www.geeksforgeeks.org/dsa/traveling-salesman-problem-using-branch-and-bound-2/
     Esto servirá como código base para la implementación de nuestro código en paralelo.
 */
-
+#include <bits/stdc++.h>
 #include <algorithm>
 #include <atomic>
 #include <chrono>

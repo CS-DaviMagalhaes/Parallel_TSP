@@ -1,6 +1,5 @@
 #include <mpi.h>
 #include <omp.h>
-
 #include <vector>
 #include <random>
 #include <chrono>
@@ -8,63 +7,16 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <string>
-#include <cmath>
-#include <limits>
 #include <unordered_set>
-#include <cstdlib> 
+#include "utils/tools.cpp"
 
 using namespace std;
 using vi = vector<int>;
 using vvi = vector<vi>;
 
-// -------------------- TSPLIB reader + distance --------------------
-struct City { double x,y; };
 
 // Variable Global para métricas
 long long local_evaluations = 0; // "Nodos" o Candidatos evaluados
-
-vector<City> readTSPLIB(const string &filename) {
-    ifstream file(filename);
-    string line;
-    vector<City> cities;
-    bool readingCoords = false;
-
-    if (!file) {
-        // Fallback silencioso o error controlado en main
-        return cities;
-    }
-
-    while (getline(file, line)) {
-        if (line.find("NODE_COORD_SECTION") != string::npos) {
-            readingCoords = true;
-            continue;
-        }
-        if (readingCoords) {
-            if (line.find("EOF") != string::npos) break;
-            istringstream iss(line);
-            int id;
-            double x, y;
-            if (iss >> id >> x >> y)
-                cities.push_back({x, y});
-        }
-    }
-    return cities;
-}
-
-vvi computeDistanceMatrix(const vector<City>& cities) {
-    int n = (int)cities.size();
-    vvi dist(n, vi(n,0));
-    for (int i=0;i<n;i++){
-        for (int j=0;j<n;j++){
-            if (i==j) continue;
-            double dx = cities[i].x - cities[j].x;
-            double dy = cities[i].y - cities[j].y;
-            dist[i][j] = (int)lround(sqrt(dx*dx + dy*dy));
-        }
-    }
-    return dist;
-}
 
 // -------------------- Utilities (cost, nearest neighbor) --------------------
 int tourCost(const vi &tour, const vvi &adj) {
@@ -332,7 +284,7 @@ int main(int argc, char** argv) {
     // Compartir N con todos
     MPI_Bcast(&number_of_nodes, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    string fname = (argc >= 2) ? argv[1] : "xqf131.tsp";
+    string fname = (argc >= 2) ? argv[1] : "data/xqf131.tsp";
     auto cities = readTSPLIB(fname);
     
     if (cities.empty()) {
