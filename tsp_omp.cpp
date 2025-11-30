@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cstring>
 #include <chrono>
-#include <atomic> // Para contar nodos en paralelo
+#include <atomic> 
 #include <omp.h>
 
 using namespace std;
@@ -26,7 +26,6 @@ int N_GLOBAL = 0;
 const int MAX_TASK_DEPTH = 10; 
 
 // --- MÉTRICAS ---
-// Atomic para que varios hilos puedan sumar sin "race conditions"
 std::atomic<long long> nodes_visited{0}; 
 
 void copyToFinal(const vector<int>& curr_path) {
@@ -170,7 +169,7 @@ int main() {
     auto stop = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::milliseconds>(stop - start);
 
-    // --- CÁLCULO DE MÉTRICAS PARA TU INFORME ---
+
     long long total_nodes = nodes_visited.load();
     double time_sec = duration.count() / 1000.0;
     
@@ -186,12 +185,11 @@ int main() {
 
     cout << "\n=== Tiempo ms===" << endl;
     cout << "N (Tamaño): " << N_GLOBAL << endl;
-    cout << "Hilos (P): " << omp_get_max_threads() << endl; // Ojo: max threads disponibles en el entorno
+    cout << "Hilos (P): " << omp_get_max_threads() << endl; 
     cout << "Tiempo (ms): " << duration.count() << endl;
     cout << "Nodos Visitados: " << total_nodes << endl;
     cout << "FLOPs Totales (Estimado): " << estimated_flops << endl;
     cout << "GFLOPs/s (aprox): " << flops_per_sec / 1e9 << endl;
-    cout << "==========================" << endl;
 
     return 0;
 }
