@@ -177,13 +177,13 @@ int main() {
     double flops_per_sec = (time_sec > 0) ? estimated_flops / time_sec : 0;
 
     cout << "\nCosto Mínimo: " << final_res << endl;
-    cout << "Ruta: ";
-    for (int i = 0; i < N_GLOBAL; i++) {
-        cout << points[final_path[i]].id << (i + 1 < N_GLOBAL ? " -> " : "");
-    }
-    cout << " -> " << points[final_path[0]].id << endl;
+    //cout << "Ruta: ";
+    //for (int i = 0; i < N_GLOBAL; i++) {
+    //    cout << points[final_path[i]].id << (i + 1 < N_GLOBAL ? " -> " : "");
+    //}
+    //cout << " -> " << points[final_path[0]].id << endl;
 
-    cout << "\n=== Tiempo ms===" << endl;
+    cout << "\nTiempo ms" << endl;
     cout << "N (Tamaño): " << N_GLOBAL << endl;
     cout << "Hilos (P): " << omp_get_max_threads() << endl; 
     cout << "Tiempo (ms): " << duration.count() << endl;
