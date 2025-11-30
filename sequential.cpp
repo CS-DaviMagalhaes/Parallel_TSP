@@ -3,7 +3,17 @@
     Esto servirá como código base para la implementación de nuestro código en paralelo.
 */
 
-#include <bits/stdc++.h>
+#include <algorithm>
+#include <atomic>
+#include <chrono>
+#include <cmath>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <limits>
+#include <sstream>
+#include <string>
+#include <vector>
 using namespace std;
 
 vector<int> final_path; // Final solution (path of salesman)
